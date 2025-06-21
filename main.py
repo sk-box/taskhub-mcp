@@ -1,10 +1,10 @@
 from fastapi_mcp import FastApiMCP
-import api
+from api import app
 import uvicorn
 
 
 mcp = FastApiMCP(
-    api.app,
+    app,
     name="TaskHub MCP",
     description="AI-friendly task management hub for Git-native development workflows",
 )

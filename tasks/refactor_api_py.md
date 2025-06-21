@@ -1,11 +1,23 @@
 ---
-title: Refactor api.py for better organization
-status: todo
-created_at: 2025-01-21T10:00:00
-updated_at: 2025-01-21T10:00:00
-priority: high
+artifacts:
+- api/main.py
+- api/dependencies.py
+- api/routers/tasks.py
+- api/routers/execution.py
+- api/routers/help.py
+- api/services/help_builder.py
+- api/__init__.py
+- api.py
 assignee: claude
-tags: [refactoring, api, maintenance]
+created_at: 2025-01-21 10:00:00
+priority: high
+status: done
+tags:
+- refactoring
+- api
+- maintenance
+title: Refactor api.py for better organization
+updated_at: 2025-06-21 18:02:09.527044
 ---
 
 # Refactor api.py for better organization

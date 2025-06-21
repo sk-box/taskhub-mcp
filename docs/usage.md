@@ -406,6 +406,125 @@ AIエージェントが使いやすいAPIにするための改善案を実装し
 コードレビューのコメントに基づいて修正を行ってください」
 ```
 
+## タスクの実行
+
+### タスク実行機能の概要
+
+TaskHub MCPは、タスクをtmuxセッション内で実行する機能を提供します。これにより：
+- タスクを独立したセッションで実行
+- 実行ログのリアルタイム記録
+- 長時間実行タスクの管理
+- 実行中のタスクへのアタッチ
+
+### タスクの実行方法
+
+#### 方法1: デフォルトスクリプトで実行
+```bash
+# タスクを実行（execute.shが自動生成される）
+curl -X POST http://localhost:8000/tasks/{task_id}/execute
+```
+
+#### 方法2: カスタムスクリプトで実行
+```bash
+curl -X POST http://localhost:8000/tasks/{task_id}/execute \
+  -H "Content-Type: application/json" \
+  -d '{
+    "script_content": "#!/bin/bash\necho \"カスタムスクリプト実行\"\npython my_script.py"
+  }'
+```
+
+### 実行状態の確認
+
+```bash
+# 実行ステータスを確認
+curl http://localhost:8000/tasks/{task_id}/execution/status
+
+# 実行ログを取得（最新100行）
+curl http://localhost:8000/tasks/{task_id}/logs
+
+# 実行ログを取得（最新50行）
+curl http://localhost:8000/tasks/{task_id}/logs?tail=50
+```
+
+### tmuxセッションへのアタッチ
+
+実行中のタスクに直接アクセス：
+
+```bash
+# アタッチコマンドを取得
+curl http://localhost:8000/tasks/{task_id}/attach
+
+# 返されたコマンドを実行
+tmux attach-session -t taskhub_a1b2c3d4
+```
+
+tmux内での操作：
+- `Ctrl+B, D`: セッションからデタッチ
+- `Ctrl+C`: 実行中のコマンドを中断
+- `exit`: セッションを終了
+
+### タスク実行の停止
+
+```bash
+# 実行中のタスクを停止
+curl -X POST http://localhost:8000/tasks/{task_id}/stop
+```
+
+### 実行スクリプトの管理
+
+各タスクは専用のディレクトリに実行スクリプトを持つことができます：
+
+```
+tasks/
+├── {task_id}/
+│   └── execute.sh    # タスク実行スクリプト
+└── {task_id}.md      # タスク定義ファイル
+```
+
+execute.sh の例：
+```bash
+#!/bin/bash
+
+echo "タスク開始: $(date)"
+
+# 環境セットアップ
+source .venv/bin/activate
+
+# テスト実行
+pytest tests/
+
+# ビルド
+python setup.py build
+
+echo "タスク完了: $(date)"
+```
+
+### Claude Codeでの実行
+
+```
+User: タスク {task_id} を実行してください
+
+Claude: タスクを実行します。
+[POST /tasks/{task_id}/execute を使用]
+
+実行が開始されました。セッション名: taskhub_a1b2c3d4
+ログファイル: logs/{task_id}_{execution_id}.log
+
+User: 実行状態を確認してください
+
+Claude: 実行状態を確認します。
+[GET /tasks/{task_id}/execution/status を使用]
+
+タスクは現在実行中です。
+
+User: ログを表示してください
+
+Claude: 最新のログを取得します。
+[GET /tasks/{task_id}/logs を使用]
+
+[ログ内容が表示される]
+```
+
 ## よくある質問
 
 ### Q: タスクを削除するには？
@@ -419,6 +538,15 @@ A: Gitのブランチ機能を使用して、コンフリクトを回避する�
 
 ### Q: タスクの優先度設定は？
 A: タグ機能を使用して `tags: [high-priority]` のように設定できます。
+
+### Q: タスク実行にはtmuxが必要？
+A: はい、タスク実行機能を使用するにはtmuxがインストールされている必要があります。
+
+### Q: 実行ログはどこに保存される？
+A: `logs/` ディレクトリに `{task_id}_{execution_id}.log` の形式で保存されます。
+
+### Q: 同じタスクを複数回実行できる？
+A: 現在の実装では、タスクが実行中の場合は新しい実行を開始できません。実行が完了するか停止してから再実行してください。
 
 ---
 

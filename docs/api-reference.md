@@ -327,6 +327,145 @@ await mcp__taskhub__update_task_status_tasks__task_id__status_put({
 - 404エラーの場合は、`POST /tasks/sync`で再同期を試みる
 - 500エラーの場合は、ファイルシステムの状態を確認
 
+## タスク実行エンドポイント
+
+### 7. タスクの実行
+
+タスクをtmuxセッション内で実行します。
+
+```http
+POST /tasks/{task_id}/execute
+```
+
+#### パスパラメータ
+| パラメータ | 型 | 必須 | 説明 |
+|-----------|-----|------|------|
+| task_id | string (UUID) | ✓ | 実行するタスクのID |
+
+#### リクエストボディ
+```json
+{
+  "script_content": "#!/bin/bash\necho 'Hello World'"  // オプション
+}
+```
+
+| パラメータ | 型 | 必須 | 説明 |
+|-----------|-----|------|------|
+| script_content | string | × | 実行するスクリプト内容。未指定時はタスクディレクトリのexecute.shを使用 |
+
+#### レスポンス例
+```json
+{
+  "execution_id": "e1f2g3h4-i5j6-7890-klmn-op1234567890",
+  "task_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "session_name": "taskhub_a1b2c3d4",
+  "log_file": "logs/a1b2c3d4-e5f6-7890-abcd-ef1234567890_e1f2g3h4-i5j6-7890-klmn-op1234567890.log",
+  "started_at": "2025-06-21T16:00:00.123456",
+  "status": "running"
+}
+```
+
+#### エラーレスポンス
+- `400 Bad Request`: タスクが既に実行中の場合
+- `404 Not Found`: タスクが存在しない場合
+- `500 Internal Server Error`: 実行に失敗した場合
+
+---
+
+### 8. 実行ステータスの取得
+
+タスクの実行状態を確認します。
+
+```http
+GET /tasks/{task_id}/execution/status
+```
+
+#### レスポンス例
+```json
+{
+  "execution_id": "e1f2g3h4-i5j6-7890-klmn-op1234567890",
+  "task_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "session_name": "taskhub_a1b2c3d4",
+  "log_file": "logs/...",
+  "started_at": "2025-06-21T16:00:00.123456",
+  "status": "running",
+  "is_running": true
+}
+```
+
+---
+
+### 9. 実行ログの取得
+
+タスクの実行ログを取得します。
+
+```http
+GET /tasks/{task_id}/logs?tail=100
+```
+
+#### クエリパラメータ
+| パラメータ | 型 | 必須 | 説明 | デフォルト |
+|-----------|-----|------|------|----------|
+| tail | integer | × | 取得する最新の行数 | 100 |
+
+#### レスポンス例
+```json
+{
+  "task_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "logs": [
+    "Starting task execution: a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "Timestamp: Fri Jun 21 16:00:00 UTC 2025",
+    "================================",
+    "Task execution placeholder",
+    "Please update the execute.sh script in the task directory",
+    "================================",
+    "Task completed: Fri Jun 21 16:00:01 UTC 2025",
+    "Exit code: 0"
+  ],
+  "line_count": 8
+}
+```
+
+---
+
+### 10. タスク実行の停止
+
+実行中のタスクを停止します。
+
+```http
+POST /tasks/{task_id}/stop
+```
+
+#### レスポンス例
+```json
+{
+  "message": "Task a1b2c3d4-e5f6-7890-abcd-ef1234567890 execution stopped",
+  "success": true
+}
+```
+
+---
+
+### 11. tmuxセッションへのアタッチ
+
+タスクのtmuxセッションにアタッチするためのコマンドを取得します。
+
+```http
+GET /tasks/{task_id}/attach
+```
+
+#### レスポンス例
+```json
+{
+  "task_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "command": "tmux attach-session -t taskhub_a1b2c3d4",
+  "message": "Run this command in your terminal to attach to the task session"
+}
+```
+
+#### エラーレスポンス
+- `404 Not Found`: アクティブなセッションが存在しない場合
+
 ## 今後の拡張予定
 
 ### 認証・認可
@@ -338,7 +477,7 @@ await mcp__taskhub__update_task_status_tasks__task_id__status_put({
 - `DELETE /tasks/{task_id}`: タスクの削除
 - `PATCH /tasks/{task_id}`: タスクの部分更新
 - `GET /tasks/search`: 全文検索
-- `POST /tasks/{task_id}/execute`: タスクの実行
+- `GET /tasks/{task_id}/execution/history`: 実行履歴の取得
 
 ### WebSocket対応
 - リアルタイムステータス更新

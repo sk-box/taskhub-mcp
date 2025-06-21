@@ -32,6 +32,7 @@ class MarkdownTaskParser:
                 "tags": metadata.get("tags", []),
                 "created_at": metadata.get("created_at", datetime.now()),
                 "updated_at": metadata.get("updated_at", datetime.now()),
+                "artifacts": metadata.get("artifacts", []),
                 "content": content
             }
             
@@ -95,6 +96,9 @@ class MarkdownTaskWriter:
             
             if task_data.get("assignee"):
                 post.metadata["assignee"] = task_data["assignee"]
+            
+            if task_data.get("artifacts"):
+                post.metadata["artifacts"] = task_data["artifacts"]
             
             # Write back
             with open(full_path, 'w', encoding='utf-8') as f:

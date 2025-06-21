@@ -1,0 +1,10 @@
+include README.md
+include LICENSE
+include CLAUDE.md
+include requirements.txt
+recursive-include taskhub_mcp *.py
+recursive-include docs *.md
+global-exclude __pycache__
+global-exclude *.py[cod]
+global-exclude .DS_Store
+global-exclude .gitignore

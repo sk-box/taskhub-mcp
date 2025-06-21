@@ -23,25 +23,25 @@ TaskHub MCPは、AIエージェント（特にClaude）を主要なユーザー�
 - Git
 - tmux（タスク実行機能を使用する場合）
 
-### ライブラリとしてインストール
+### GitHubから直接インストール
 
 ```bash
 # uvを使用してインストール
-uv pip install taskhub-mcp
+uv pip install git+https://github.com/sk-box/taskhub-mcp.git
 
 # または pipを使用
-pip install taskhub-mcp
+pip install git+https://github.com/sk-box/taskhub-mcp.git
 
-# 開発版をGitHubから直接インストール
-uv pip install git+https://github.com/yourusername/taskhub-mcp.git
+# 特定のブランチやタグからインストール
+uv pip install git+https://github.com/sk-box/taskhub-mcp.git@main
 ```
 
 ### 開発環境のセットアップ
 
 ```bash
 # リポジトリをクローン
-git clone <repository>
-cd taskhub_mcp
+git clone https://github.com/sk-box/taskhub-mcp.git
+cd taskhub-mcp
 
 # 開発モードでインストール（uvを使用）
 uv pip install -e ".[dev]"

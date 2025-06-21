@@ -37,8 +37,8 @@ dependencies = [
 ]
 
 [project.urls]
-Repository = "https://github.com/yourusername/taskhub-mcp"
-"Bug Reports" = "https://github.com/yourusername/taskhub-mcp/issues"
+Repository = "https://github.com/sk-box/taskhub-mcp"
+"Bug Reports" = "https://github.com/sk-box/taskhub-mcp/issues"
 
 [project.scripts]
 taskhub-mcp = "taskhub_mcp.cli:main"

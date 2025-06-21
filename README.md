@@ -52,6 +52,27 @@ uv pip install -e ".[dev]"
 pip install -e ".[dev]"
 ```
 
+### Updating TaskHub
+
+To update to the latest version:
+
+```bash
+# Update with uv (recommended)
+uv pip install -U git+https://github.com/sk-box/taskhub-mcp.git
+
+# Or with pip
+pip install --upgrade git+https://github.com/sk-box/taskhub-mcp.git
+
+# Update from a specific branch
+uv pip install -U git+https://github.com/sk-box/taskhub-mcp.git@main
+```
+
+For production environments:
+1. Stop the server: `taskhub-mcp --stop`
+2. Backup your data: `cp -r db backups/$(date +%Y%m%d_%H%M%S)`
+3. Update: `uv pip install -U git+https://github.com/sk-box/taskhub-mcp.git`
+4. Restart: `taskhub-mcp --daemon --no-reload`
+
 ## Using TaskHub
 
 ### Fire Up the Server

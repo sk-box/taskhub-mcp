@@ -16,13 +16,10 @@ def main():
     print(f"Data directory: {data_dir}")
     print(f"Server: http://{SERVER_HOST}:{SERVER_PORT}")
     
-    # Get the path to the main.py file
-    main_module = Path(__file__).parent / "main.py"
-    
-    # Run the server using uvicorn
+    # Run the server using module execution
     try:
         subprocess.run(
-            [sys.executable, str(main_module)],
+            [sys.executable, "-m", "taskhub_mcp.main"],
             check=True
         )
     except KeyboardInterrupt:

@@ -1,9 +1,14 @@
 ---
+artifacts:
+- api.py
+created_at: 2025-06-21 16:05:00
+status: done
+tags:
+- mcp-improvement
+- high-priority
+- error-handling
 title: Standardize error responses
-status: todo
-created_at: 2025-06-21T16:05:00
-updated_at: 2025-06-21T16:05:00
-tags: [mcp-improvement, high-priority, error-handling]
+updated_at: 2025-06-21 16:36:01.379690
 ---
 
 # Standardize error responses

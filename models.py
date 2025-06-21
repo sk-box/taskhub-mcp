@@ -43,3 +43,47 @@ class ExecutionLog(BaseModel):
         json_encoders = {
             datetime: lambda v: v.isoformat()
         }
+
+
+# Help system models
+class ParameterInfo(BaseModel):
+    name: str
+    type: str
+    required: bool = True
+    default: Optional[Any] = None
+    description: str
+    enum: Optional[List[str]] = None
+
+
+class ExampleInfo(BaseModel):
+    description: str
+    request: Dict[str, Any]
+    response: Any
+
+
+class ToolInfo(BaseModel):
+    name: str
+    description: str
+    http_method: str
+    endpoint: str
+    parameters: List[ParameterInfo]
+    examples: List[ExampleInfo]
+    related_tools: Optional[List[str]] = None
+
+
+class APIInfo(BaseModel):
+    name: str = "TaskHub MCP"
+    version: str = "1.0.0"
+    description: str = "AI-first Git-native task management system"
+
+
+class QuickStartInfo(BaseModel):
+    steps: List[str]
+    tips: List[str]
+
+
+class HelpResponse(BaseModel):
+    api: APIInfo
+    tools: Dict[str, ToolInfo]
+    quick_start: QuickStartInfo
+    mcp_connection: Dict[str, str]

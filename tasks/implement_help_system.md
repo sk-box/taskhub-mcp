@@ -1,9 +1,15 @@
 ---
+artifacts:
+- api.py
+- models.py
+created_at: 2025-06-21 16:00:00
+status: done
+tags:
+- mcp-improvement
+- high-priority
+- documentation
 title: Implement comprehensive help system
-status: todo
-created_at: 2025-06-21T16:00:00
-updated_at: 2025-06-21T16:00:00
-tags: [mcp-improvement, high-priority, documentation]
+updated_at: 2025-06-21 16:28:46.011578
 ---
 
 # Implement comprehensive help system

@@ -1,8 +1,8 @@
 ---
 created_at: 2025-06-21 14:37:40.496412
-status: todo
+status: done
 title: Update project documentation
-updated_at: 2025-06-21 14:37:40.496421
+updated_at: 2025-06-21 15:19:37.138861
 ---
 
 # Update project documentation

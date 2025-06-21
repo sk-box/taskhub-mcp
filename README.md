@@ -90,6 +90,23 @@ python main.py
 
 Your server will be running at `http://localhost:8000`.
 
+### Production vs Development Mode
+
+By default, TaskHub runs in development mode with auto-reload enabled (server restarts on file changes).
+
+For production use, disable auto-reload:
+
+```bash
+# Using environment variable
+TASKHUB_ENV=production taskhub-mcp
+
+# Or using CLI flag
+taskhub-mcp --no-reload
+
+# Daemon mode with production settings
+taskhub-mcp --daemon --no-reload
+```
+
 ### Connect Claude Code
 
 ```bash
@@ -274,6 +291,9 @@ ps aux | grep -E 'uvicorn|fastapi|taskhub'
 
 # Watch logs during development
 uv run main.py  # auto-reloads on changes
+
+# Run in production mode (no auto-reload)
+TASKHUB_ENV=production uv run main.py
 
 # Start fresh
 rm db/tasks_db.json

@@ -1,6 +1,6 @@
 from fastapi_mcp import FastApiMCP
 from .api import app
-from .config import SERVER_HOST, SERVER_PORT, find_available_port
+from .config import SERVER_HOST, SERVER_PORT, find_available_port, AUTO_RELOAD
 import uvicorn
 
 
@@ -21,8 +21,12 @@ def run_server():
     if port != SERVER_PORT:
         print(f"Port {SERVER_PORT} is already in use, using port {port} instead")
     
+    # Show reload status
+    reload_status = "enabled (development)" if AUTO_RELOAD else "disabled (production)"
+    print(f"Starting TaskHub MCP server with auto-reload {reload_status}")
+    
     # Run the server on the available port
-    uvicorn.run("taskhub_mcp.api:app", host=SERVER_HOST, port=port, reload=True)
+    uvicorn.run("taskhub_mcp.api:app", host=SERVER_HOST, port=port, reload=AUTO_RELOAD)
 
 
 if __name__ == "__main__":
@@ -34,6 +38,6 @@ if __name__ == "__main__":
         from pathlib import Path
         sys.path.insert(0, str(Path(__file__).parent.parent))
         from taskhub_mcp.api import app
-        from taskhub_mcp.config import SERVER_HOST, SERVER_PORT, find_available_port
+        from taskhub_mcp.config import SERVER_HOST, SERVER_PORT, find_available_port, AUTO_RELOAD
     
     run_server()

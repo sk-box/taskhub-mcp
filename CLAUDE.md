@@ -88,14 +88,22 @@ When connected via Claude Code, the following tools are available:
 
 ## Development Commands
 ```bash
-# Start the MCP server
+# Start the MCP server (default: development mode with auto-reload)
 uv run main.py
 
 # Or use the start script
 ./start_server.sh
 
+# Start in production mode (disable auto-reload)
+TASKHUB_ENV=production uv run main.py
+# Or with CLI flag
+taskhub-mcp --no-reload
+
 # Start in daemon mode
 taskhub-mcp --daemon
+
+# Start daemon in production mode
+taskhub-mcp --daemon --no-reload
 
 # Check server status
 taskhub-mcp --status
@@ -109,6 +117,12 @@ ps aux | grep -E 'uvicorn|fastapi|taskhub'
 # View daemon logs
 tail -f <data-dir>/taskhub-mcp.log
 ```
+
+### Auto-reload Configuration
+- **Development mode (default)**: Auto-reload is enabled, server restarts on file changes
+- **Production mode**: Auto-reload is disabled for stability
+- Set via environment variable: `TASKHUB_ENV=production`
+- Or use CLI flag: `--no-reload`
 
 ## Next Steps
 1. 📝 ドキュメント整理 (tasks/update_project_documentation.md)

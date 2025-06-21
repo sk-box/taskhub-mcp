@@ -25,6 +25,8 @@ def main():
                       help='Stop the daemon server')
     parser.add_argument('--status', action='store_true',
                       help='Check server status')
+    parser.add_argument('--no-reload', action='store_true',
+                      help='Disable auto-reload (production mode)')
     args = parser.parse_args()
     
     data_dir = get_data_dir()
@@ -124,9 +126,14 @@ def main():
     
     # Run the server using module execution
     try:
+        env = os.environ.copy()
+        if args.no_reload:
+            env['TASKHUB_ENV'] = 'production'
+        
         subprocess.run(
             [sys.executable, "-m", "taskhub_mcp.main"],
-            check=True
+            check=True,
+            env=env
         )
     except KeyboardInterrupt:
         if not args.daemon:

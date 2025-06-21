@@ -111,3 +111,8 @@ def find_available_port(start_port: int = 8000, max_tries: int = 100) -> int:
 # Server configuration
 SERVER_HOST = os.environ.get("TASKHUB_HOST", "127.0.0.1")
 SERVER_PORT = get_port()
+
+# Development mode configuration
+# Set TASKHUB_ENV=production to disable auto-reload
+ENVIRONMENT = os.environ.get("TASKHUB_ENV", "development")
+AUTO_RELOAD = ENVIRONMENT != "production"

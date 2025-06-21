@@ -8,6 +8,7 @@ class TaskIndex(BaseModel):
     status: Literal["todo", "inprogress", "review", "done"] = "todo"
     file_path: str
     updated_at: datetime = Field(default_factory=datetime.now)
+    priority: Optional[Literal["low", "medium", "high"]] = None
     assignee: Optional[str] = None
     artifacts: Optional[List[str]] = None  # List of file paths to deliverables
     

@@ -80,7 +80,9 @@ Content-Type: application/json
 {
   "title": "新機能の実装",
   "content": "詳細な説明...",
-  "directory": "features"  // オプション
+  "directory": "features",  // オプション
+  "priority": "high",        // オプション: low, medium, high
+  "assignee": "alice"       // オプション: 担当者名
 }
 ```
 
@@ -96,7 +98,9 @@ PUT /tasks/{task_id}/status
 Content-Type: application/json
 
 {
-  "new_status": "inprogress"
+  "new_status": "inprogress",
+  "priority": "high",        // オプション: 優先度の更新
+  "assignee": "bob"          // オプション: 担当者の更新
 }
 ```
 
@@ -130,7 +134,8 @@ title: タスクのタイトル
 status: todo
 created_at: 2025-06-21T14:00:00
 updated_at: 2025-06-21T14:00:00
-assignee: claude  # オプション
+priority: medium  # オプション: low, medium, high
+assignee: claude  # オプション: 担当者名
 tags: [feature, backend]  # オプション
 ---
 

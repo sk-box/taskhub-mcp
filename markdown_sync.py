@@ -28,6 +28,7 @@ class MarkdownTaskParser:
                 "file_path": str(file_path.relative_to(self.base_path)),
                 "title": metadata.get("title", file_path.stem),
                 "status": metadata.get("status", "todo"),
+                "priority": metadata.get("priority"),
                 "assignee": metadata.get("assignee"),
                 "tags": metadata.get("tags", []),
                 "created_at": metadata.get("created_at", datetime.now()),
@@ -94,6 +95,9 @@ class MarkdownTaskWriter:
             post.metadata["status"] = task_data.get("status", "todo")
             post.metadata["updated_at"] = datetime.now()
             
+            if task_data.get("priority"):
+                post.metadata["priority"] = task_data["priority"]
+            
             if task_data.get("assignee"):
                 post.metadata["assignee"] = task_data["assignee"]
             
@@ -110,7 +114,7 @@ class MarkdownTaskWriter:
             print(f"Error updating {file_path}: {e}")
             return False
     
-    def create_task_file(self, file_path: str, title: str, content: str = "") -> bool:
+    def create_task_file(self, file_path: str, title: str, content: str = "", priority: Optional[str] = None, assignee: Optional[str] = None) -> bool:
         """Create a new task Markdown file"""
         full_path = self.base_path / file_path
         
@@ -124,6 +128,12 @@ class MarkdownTaskWriter:
             post.metadata["status"] = "todo"
             post.metadata["created_at"] = datetime.now()
             post.metadata["updated_at"] = datetime.now()
+            
+            if priority:
+                post.metadata["priority"] = priority
+            
+            if assignee:
+                post.metadata["assignee"] = assignee
             
             # Write file
             with open(full_path, 'w', encoding='utf-8') as f:

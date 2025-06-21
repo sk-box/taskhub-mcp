@@ -45,7 +45,9 @@ POST /tasks/create
 {
   "title": "新機能の実装",
   "content": "## 詳細\n機能の詳細な説明...",
-  "directory": "features"  // オプション: サブディレクトリ指定
+  "directory": "features",  // オプション: サブディレクトリ指定
+  "priority": "high",        // オプション: 優先度
+  "assignee": "alice"       // オプション: 担当者
 }
 ```
 
@@ -54,6 +56,8 @@ POST /tasks/create
 | title | string | ✓ | タスクのタイトル |
 | content | string | × | タスクの詳細内容（デフォルト: 空） |
 | directory | string | × | tasks/配下のサブディレクトリ |
+| priority | string | × | 優先度（low, medium, high） |
+| assignee | string | × | 担当者名 |
 
 #### レスポンス例
 ```json
@@ -62,7 +66,8 @@ POST /tasks/create
   "status": "todo",
   "file_path": "features/new-feature.md",
   "updated_at": "2025-06-21T15:30:00.123456",
-  "assignee": null
+  "priority": "high",
+  "assignee": "alice"
 }
 ```
 
@@ -99,6 +104,7 @@ GET /tasks?status={status}
     "status": "todo",
     "file_path": "implement-feature.md",
     "updated_at": "2025-06-21T15:00:00.123456",
+    "priority": "medium",
     "assignee": null
   },
   {
@@ -106,6 +112,7 @@ GET /tasks?status={status}
     "status": "todo",
     "file_path": "fix-bug.md",
     "updated_at": "2025-06-21T14:30:00.654321",
+    "priority": "high",
     "assignee": "claude"
   }
 ]
@@ -129,13 +136,17 @@ PUT /tasks/{task_id}/status
 #### リクエストボディ
 ```json
 {
-  "new_status": "inprogress"
+  "new_status": "inprogress",
+  "priority": "high",        // オプション: 優先度の更新
+  "assignee": "bob"          // オプション: 担当者の更新
 }
 ```
 
 | パラメータ | 型 | 必須 | 説明 |
 |-----------|-----|------|------|
 | new_status | string | ✓ | 新しいステータス |
+| priority | string | × | 優先度（low, medium, high） |
+| assignee | string | × | 担当者名 |
 
 有効なステータス値:
 - `inprogress`: 進行中に変更
@@ -149,7 +160,8 @@ PUT /tasks/{task_id}/status
   "status": "inprogress",
   "file_path": "implement-feature.md",
   "updated_at": "2025-06-21T15:35:00.789012",
-  "assignee": null
+  "priority": "high",
+  "assignee": "bob"
 }
 ```
 
@@ -179,6 +191,7 @@ GET /tasks/file/{task_id}
   "status": "todo",
   "file_path": "implement-feature.md",
   "updated_at": "2025-06-21T15:00:00.123456",
+  "priority": "medium",
   "assignee": "claude",
   "title": "新機能の実装",
   "tags": ["feature", "backend"],

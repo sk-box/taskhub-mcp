@@ -77,6 +77,8 @@ def update_status(
     task_id: str, 
     new_status: Literal["inprogress", "review", "done"], 
     artifacts: Optional[List[str]] = None,
+    priority: Optional[Literal["low", "medium", "high"]] = None,
+    assignee: Optional[str] = None,
     background_tasks: BackgroundTasks = None
 ):
     """Update the status of a task.
@@ -88,6 +90,8 @@ def update_status(
         task_id: UUID of the task to update
         new_status: New status for the task
         artifacts: Optional list of file paths to deliverables (when marking as done)
+        priority: Optional priority level (low, medium, high)
+        assignee: Optional assignee name
         
     Returns:
         TaskIndex: Updated task information
@@ -104,9 +108,15 @@ def update_status(
         "updated_at": datetime.now().isoformat()
     }
     
-    # Add artifacts if provided (typically when completing a task)
+    # Add optional fields if provided
     if artifacts is not None:
         update_data["artifacts"] = artifacts
+    
+    if priority is not None:
+        update_data["priority"] = priority
+    
+    if assignee is not None:
+        update_data["assignee"] = assignee
     
     db.update(update_data, TaskQuery.id == task_id)
     updated_task = db.get(TaskQuery.id == task_id)
@@ -141,6 +151,7 @@ def sync_files():
         task = TaskIndex(
             file_path=task_data["file_path"],
             status=task_data["status"],
+            priority=task_data.get("priority"),
             assignee=task_data.get("assignee")
         )
         task_dict = task.dict()
@@ -151,7 +162,7 @@ def sync_files():
     return {"message": f"Synced {len(tasks)} tasks from Markdown files"}
 
 @app.post("/create", tags=["Task Management"])
-def create_task(title: str, content: str = "", directory: str = ""):
+def create_task(title: str, content: str = "", directory: str = "", priority: Optional[Literal["low", "medium", "high"]] = None, assignee: Optional[str] = None):
     """Create a new task with corresponding Markdown file.
     
     Creates both a Markdown file and database entry for a new task.
@@ -161,6 +172,8 @@ def create_task(title: str, content: str = "", directory: str = ""):
         title: Title of the new task
         content: Initial content for the task Markdown file
         directory: Optional subdirectory within tasks folder
+        priority: Optional priority level (low, medium, high)
+        assignee: Optional assignee name
         
     Returns:
         dict: Success message and created task information
@@ -178,9 +191,9 @@ def create_task(title: str, content: str = "", directory: str = ""):
         file_path = f"{safe_title}.md"
     
     # Create Markdown file
-    if writer.create_task_file(file_path, title, content):
+    if writer.create_task_file(file_path, title, content, priority, assignee):
         # Create database entry
-        task = TaskIndex(file_path=file_path)
+        task = TaskIndex(file_path=file_path, priority=priority, assignee=assignee)
         task_dict = task.dict()
         # Convert datetime to ISO format for TinyDB
         task_dict["updated_at"] = task_dict["updated_at"].isoformat()
@@ -348,7 +361,7 @@ def _build_tool_info() -> Dict[str, ToolInfo]:
                 ExampleInfo(
                     description="Get tasks in progress",
                     request={"status": "inprogress"},
-                    response=[{"id": "456", "status": "inprogress", "file_path": "fix_bug.md", "assignee": "worker-1"}]
+                    response=[{"id": "456", "status": "inprogress", "file_path": "fix_bug.md", "priority": "medium", "assignee": "worker-1"}]
                 )
             ],
             related_tools=["get_task_details", "update_status"]
@@ -408,6 +421,19 @@ def _build_tool_info() -> Dict[str, ToolInfo]:
                     type="array",
                     required=False,
                     description="List of file paths to deliverables (when marking as done)"
+                ),
+                ParameterInfo(
+                    name="priority",
+                    type="string",
+                    required=False,
+                    description="Priority level for the task",
+                    enum=["low", "medium", "high"]
+                ),
+                ParameterInfo(
+                    name="assignee",
+                    type="string",
+                    required=False,
+                    description="Assignee name for the task"
                 )
             ],
             examples=[
@@ -424,6 +450,16 @@ def _build_tool_info() -> Dict[str, ToolInfo]:
                         "artifacts": ["api.py", "models.py"]
                     },
                     response={"id": "123", "status": "done", "artifacts": ["api.py", "models.py"]}
+                ),
+                ExampleInfo(
+                    description="Update task with priority and assignee",
+                    request={
+                        "task_id": "456",
+                        "new_status": "inprogress",
+                        "priority": "high",
+                        "assignee": "alice"
+                    },
+                    response={"id": "456", "status": "inprogress", "priority": "high", "assignee": "alice"}
                 )
             ],
             related_tools=["list_tasks", "get_task_details"]
@@ -470,6 +506,19 @@ def _build_tool_info() -> Dict[str, ToolInfo]:
                     required=False,
                     default="",
                     description="Subdirectory within tasks folder"
+                ),
+                ParameterInfo(
+                    name="priority",
+                    type="string",
+                    required=False,
+                    description="Priority level for the task",
+                    enum=["low", "medium", "high"]
+                ),
+                ParameterInfo(
+                    name="assignee",
+                    type="string",
+                    required=False,
+                    description="Assignee name for the task"
                 )
             ],
             examples=[
@@ -477,6 +526,16 @@ def _build_tool_info() -> Dict[str, ToolInfo]:
                     description="Create a new task",
                     request={"title": "Implement new feature", "content": "## Description\nImplement XYZ feature"},
                     response={"message": "Task created", "task": {"id": "789", "file_path": "implement_new_feature.md"}}
+                ),
+                ExampleInfo(
+                    description="Create high priority task with assignee",
+                    request={
+                        "title": "Fix critical bug",
+                        "content": "## Bug\nCritical issue in production",
+                        "priority": "high",
+                        "assignee": "bob"
+                    },
+                    response={"message": "Task created", "task": {"id": "999", "file_path": "fix_critical_bug.md", "priority": "high", "assignee": "bob"}}
                 )
             ],
             related_tools=["list_tasks", "get_task_details"]

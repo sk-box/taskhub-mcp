@@ -6,11 +6,15 @@ TaskHub MCP CLI entry point
 import sys
 import subprocess
 from pathlib import Path
+from .config import SERVER_HOST, SERVER_PORT, get_data_dir
 
 
 def main():
     """Main entry point for taskhub-mcp CLI"""
-    print("Starting TaskHub MCP server...")
+    data_dir = get_data_dir()
+    print(f"Starting TaskHub MCP server...")
+    print(f"Data directory: {data_dir}")
+    print(f"Server: http://{SERVER_HOST}:{SERVER_PORT}")
     
     # Get the path to the main.py file
     main_module = Path(__file__).parent / "main.py"

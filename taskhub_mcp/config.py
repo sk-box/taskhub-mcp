@@ -3,6 +3,7 @@ Configuration for TaskHub MCP
 """
 
 import os
+import socket
 from pathlib import Path
 
 
@@ -63,3 +64,50 @@ def ensure_directories() -> tuple[Path, Path, Path]:
 # Global paths
 DB_DIR, TASKS_DIR, LOGS_DIR = ensure_directories()
 DB_PATH = DB_DIR / "tasks_db.json"
+
+
+def get_port() -> int:
+    """Get the port number for the server.
+    
+    Priority order:
+    1. TASKHUB_PORT environment variable
+    2. Find next available port starting from 8000
+    """
+    # Check environment variable first
+    if port_str := os.environ.get("TASKHUB_PORT"):
+        try:
+            return int(port_str)
+        except ValueError:
+            print(f"Warning: Invalid TASKHUB_PORT value '{port_str}', using default")
+    
+    # Default port
+    return 8000
+
+
+def find_available_port(start_port: int = 8000, max_tries: int = 100) -> int:
+    """Find an available port starting from start_port.
+    
+    Args:
+        start_port: Port number to start searching from
+        max_tries: Maximum number of ports to try
+        
+    Returns:
+        Available port number
+        
+    Raises:
+        RuntimeError: If no available port found
+    """
+    for port in range(start_port, start_port + max_tries):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            try:
+                s.bind(("127.0.0.1", port))
+                return port
+            except OSError:
+                continue
+    
+    raise RuntimeError(f"No available port found in range {start_port}-{start_port + max_tries}")
+
+
+# Server configuration
+SERVER_HOST = os.environ.get("TASKHUB_HOST", "127.0.0.1")
+SERVER_PORT = get_port()

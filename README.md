@@ -276,6 +276,38 @@ cd /path/to/myproject
 taskhub-mcp
 ```
 
+### ポート設定について
+
+複数のプロジェクトで同時にTaskHub MCPを使用する場合、ポートの競合を避けるため以下の方法で設定できます：
+
+1. **環境変数で指定**：
+```bash
+# ポート8001で起動
+TASKHUB_PORT=8001 taskhub-mcp
+
+# ホストとポートを両方指定
+TASKHUB_HOST=0.0.0.0 TASKHUB_PORT=8080 taskhub-mcp
+```
+
+2. **自動ポート検出**：
+- ポート8000が使用中の場合、自動的に次の利用可能なポートを探します
+- 起動時のメッセージで実際に使用されているポートを確認してください
+
+3. **プロジェクトごとの設定例**：
+```bash
+# プロジェクトA（デフォルトポート8000）
+cd /path/to/projectA
+taskhub-mcp
+
+# プロジェクトB（ポート8001）
+cd /path/to/projectB
+TASKHUB_PORT=8001 taskhub-mcp
+
+# プロジェクトC（ポート8002）
+cd /path/to/projectC
+TASKHUB_PORT=8002 taskhub-mcp
+```
+
 ### 1. サーバーの起動確認
 
 ```bash

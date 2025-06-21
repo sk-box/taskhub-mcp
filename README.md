@@ -18,36 +18,60 @@ TaskHub MCPは、AIエージェント（特にClaude）を主要なユーザー�
 
 ### 前提条件
 
-- Python 3.11以上
-- uv（Pythonパッケージマネージャー）
+- Python 3.8以上
+- uv または pip
 - Git
+- tmux（タスク実行機能を使用する場合）
 
-### セットアップ手順
+### ライブラリとしてインストール
+
+```bash
+# uvを使用してインストール
+uv pip install taskhub-mcp
+
+# または pipを使用
+pip install taskhub-mcp
+
+# 開発版をGitHubから直接インストール
+uv pip install git+https://github.com/yourusername/taskhub-mcp.git
+```
+
+### 開発環境のセットアップ
 
 ```bash
 # リポジトリをクローン
 git clone <repository>
 cd taskhub_mcp
 
-# 依存関係をインストール（uvを使用）
-uv venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
-uv pip install -r requirements.txt
+# 開発モードでインストール（uvを使用）
+uv pip install -e ".[dev]"
 
 # または pipを使用
-pip install -r requirements.txt
+pip install -e ".[dev]"
 ```
 
 ## 使用方法
 
 ### サーバーの起動
 
+#### ライブラリとしてインストールした場合
+
+```bash
+# CLIコマンドを使用
+taskhub-mcp
+
+# または
+taskhub-server
+```
+
+#### 開発環境の場合
+
 ```bash
 # 推奨: スタートスクリプトを使用
 ./start_server.sh
 
 # または直接実行
-uv run main.py
+python -m taskhub_mcp.main
 
 # または
 python main.py
@@ -229,9 +253,51 @@ TaskHub MCPの開発では、[MCPベストプラクティスガイド](./docs/mc
 
 詳細は[MCPベストプラクティスガイド](./docs/mcp-best-practices.md)を参照してください。
 
+## インストール後の動作確認
+
+### 1. サーバーの起動確認
+
+```bash
+# インストール後、サーバーを起動
+taskhub-mcp
+
+# 別のターミナルでヘルスチェック
+curl http://127.0.0.1:8000/health
+```
+
+### 2. Claude Codeでの接続確認
+
+1. Claude Codeで新しいチャットを開始
+2. MCPツールが利用可能か確認:
+```
+# ヘルプ情報を取得
+mcp__taskhub__get_help_help__get を使用してください
+```
+
+### 3. 基本的な動作テスト
+
+```bash
+# タスク一覧の取得（空のリストが返るはず）
+curl http://127.0.0.1:8000/tasks?status=todo
+
+# 新しいタスクの作成
+curl -X POST http://127.0.0.1:8000/tasks/create \
+  -H "Content-Type: application/json" \
+  -d '{"title": "Test Task", "content": "This is a test task"}'
+
+# 作成されたタスクの確認
+curl http://127.0.0.1:8000/tasks?status=todo
+```
+
+### 4. トラブルシューティング
+
+- **ポート8000が使用中の場合**: 環境変数 `TASKHUB_PORT` で別のポートを指定
+- **tmuxが見つからない場合**: タスク実行機能を使用する場合は tmux をインストール
+- **ログの確認**: `logs/` ディレクトリ内のログファイルを確認
+
 ## ライセンス
 
-[ライセンス情報を追加してください]
+MIT License
 
 ## 貢献
 

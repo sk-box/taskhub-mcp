@@ -4,7 +4,7 @@ from datetime import datetime
 from pathlib import Path
 import json
 
-from models import TaskIndex
+from ...models import TaskIndex
 from ..dependencies import get_db, TaskQuery, get_parser, get_writer, ensure_tasks_directory
 
 router = APIRouter(prefix="/tasks", tags=["Task Management"])

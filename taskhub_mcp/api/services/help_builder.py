@@ -1,5 +1,5 @@
 from typing import Dict, List
-from models import ToolInfo, ParameterInfo, ExampleInfo
+from ...models import ToolInfo, ParameterInfo, ExampleInfo
 
 def build_tool_info() -> Dict[str, ToolInfo]:
     """Build comprehensive tool information from available endpoints"""

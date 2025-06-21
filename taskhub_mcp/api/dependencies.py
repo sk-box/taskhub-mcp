@@ -1,7 +1,7 @@
 from tinydb import TinyDB, Query
 from pathlib import Path
-from markdown_sync import MarkdownTaskParser, MarkdownTaskWriter
-from task_executor import TaskExecutor
+from ..markdown_sync import MarkdownTaskParser, MarkdownTaskWriter
+from ..task_executor import TaskExecutor
 
 # Database setup
 def get_db():

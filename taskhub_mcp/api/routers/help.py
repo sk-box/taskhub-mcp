@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from typing import Dict, Any
 
-from models import HelpResponse, APIInfo, QuickStartInfo
+from ...models import HelpResponse, APIInfo, QuickStartInfo
 from ..services.help_builder import build_tool_info, get_tool_usage_tips, get_common_errors
 
 router = APIRouter(prefix="/help", tags=["Help System"])

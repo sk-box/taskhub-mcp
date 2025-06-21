@@ -1,366 +1,369 @@
 # TaskHub MCP Server
 
-AIエージェント向けのGitネイティブなタスク管理システム。Markdownファイルを真実の情報源として、MCPプロトコルを通じてタスク管理を行います。
+A Git-native task management system built for AI agents. Think of it as a task manager where Markdown files are the source of truth, accessible through the MCP protocol.
 
-## 概要
+## What's TaskHub?
 
-TaskHub MCPは、AIエージェント（特にClaude）を主要なユーザーとして設計された革新的なタスク管理システムです。従来の人間向けUIではなく、AIが効率的に利用できるAPI設計を採用し、開発タスクの管理と実行を統合します。
+TaskHub MCP is a task management system designed with AI agents (especially Claude) as the primary users. Instead of building yet another web UI, we've created an API that AI agents can actually use effectively. It integrates task management with execution, making it perfect for development workflows.
 
-### 主な特徴
+### Why You'll Love It
 
-- **AIファースト設計**: 人間のUIではなく、AIが使いやすいAPIを優先
-- **Gitネイティブ**: Markdownファイルが真実の源、データベースは検索用インデックス
-- **MCP対応**: Claude CodeなどのMCP対応クライアントから直接タスクを操作
-- **双方向同期**: Markdownファイルとデータベースがリアルタイムで同期
-- **実行可能（計画中）**: タスクの管理だけでなく、実際の実行環境との統合も予定
+- **AI-First Design**: Built for AI agents, not humans clicking through UIs
+- **Git-Native**: Your tasks live in Markdown files - version control them, diff them, merge them
+- **MCP Protocol**: Works seamlessly with Claude Code and other MCP-compatible clients
+- **Real-Time Sync**: Changes to Markdown files instantly update the database and vice versa
+- **Task Execution**: Not just tracking - actually run tasks in tmux sessions
+- **Multi-Agent Support**: Orchestrator-Worker pattern for complex workflows
 
-## インストール
+## Getting Started
 
-### 前提条件
+### What You'll Need
 
-- Python 3.10以上
-- uv または pip
-- Git
-- tmux（タスク実行機能を使用する場合）
+- Python 3.10 or newer
+- uv or pip (we recommend uv - it's faster!)
+- Git (obviously)
+- tmux (if you want to run tasks)
 
-### GitHubから直接インストール
+### Quick Install
 
 ```bash
-# uvを使用してインストール
+# Install with uv (recommended)
 uv pip install git+https://github.com/sk-box/taskhub-mcp.git
 
-# または pipを使用
+# Or use pip if you prefer
 pip install git+https://github.com/sk-box/taskhub-mcp.git
 
-# 特定のブランチやタグからインストール
+# Want a specific branch?
 uv pip install git+https://github.com/sk-box/taskhub-mcp.git@main
 ```
 
-### 開発環境のセットアップ
+### Setting Up for Development
 
 ```bash
-# リポジトリをクローン
+# Clone the repo
 git clone https://github.com/sk-box/taskhub-mcp.git
 cd taskhub-mcp
 
-# 開発モードでインストール（uvを使用）
+# Install in development mode
 uv pip install -e ".[dev]"
 
-# または pipを使用
+# Or with pip
 pip install -e ".[dev]"
 ```
 
-## 使用方法
+## Using TaskHub
 
-### サーバーの起動
+### Fire Up the Server
 
-#### ライブラリとしてインストールした場合
+If you installed TaskHub as a package:
 
 ```bash
-# CLIコマンドを使用
+# Just run this
 taskhub-mcp
 
-# または
+# Or this works too
 taskhub-server
 ```
 
-#### 開発環境の場合
+For development:
 
 ```bash
-# 推奨: スタートスクリプトを使用
+# The easy way
 ./start_server.sh
 
-# または直接実行
+# Or run directly
 python -m taskhub_mcp.main
 
-# または
+# Or even simpler
 python main.py
 ```
 
-サーバーは `http://localhost:8000` で起動します。
+Your server will be running at `http://localhost:8000`.
 
-### Claude Codeへの登録
+### Connect Claude Code
 
 ```bash
-# MCPサーバーとして登録
+# Tell Claude about your TaskHub server
 claude mcp add -t sse taskhub http://localhost:8000/mcp
 ```
 
-登録後、Claude Code内で以下のMCPツールが利用可能になります：
-- `mcp__taskhub__create_task_with_file_tasks_create_post`
-- `mcp__taskhub__list_tasks_tasks_get`
-- `mcp__taskhub__update_task_status_tasks__task_id__status_put`
-- `mcp__taskhub__get_task_with_content_tasks_file__task_id__get`
-- `mcp__taskhub__sync_markdown_files_tasks_sync_post`
-- `mcp__taskhub__index_new_task_tasks_index_post`
+Now Claude has access to these tools:
+- `mcp__taskhub__create_task_tasks_create_post` - Create new tasks
+- `mcp__taskhub__list_tasks_tasks__get` - See what needs doing
+- `mcp__taskhub__update_status_tasks_status__task_id__put` - Update task progress
+- `mcp__taskhub__get_task_details_tasks_file__task_id__get` - Get the full scoop on a task
+- `mcp__taskhub__sync_files_tasks_sync_post` - Sync all your Markdown files
+- `mcp__taskhub__index_task_tasks_index_post` - Add existing Markdown files
+- `mcp__taskhub__execute_exec__task_id__post` - Run tasks in tmux
+- `mcp__taskhub__get_logs_exec_logs__task_id__get` - Check execution logs
+- And more!
 
-## APIエンドポイント
+## API Reference
 
-### タスク作成
+### Creating Tasks
+
 ```http
 POST /tasks/create
 Content-Type: application/json
 
 {
-  "title": "新機能の実装",
-  "content": "詳細な説明...",
-  "directory": "features",  // オプション
-  "priority": "high",        // オプション: low, medium, high
-  "assignee": "alice"       // オプション: 担当者名
+  "title": "Build awesome feature",
+  "content": "Let's make something cool...",
+  "directory": "features",  // optional - organize your tasks
+  "priority": "high",        // optional: low, medium, high
+  "assignee": "alice"       // optional: who's on it?
 }
 ```
 
-### タスク一覧取得
+### Checking Your Tasks
+
 ```http
 GET /tasks?status=todo
 ```
-ステータス: `todo`, `inprogress`, `review`, `done`
+Status options: `todo`, `inprogress`, `review`, `done`
 
-### ステータス更新
+### Updating Progress
+
 ```http
 PUT /tasks/{task_id}/status
 Content-Type: application/json
 
 {
   "new_status": "inprogress",
-  "priority": "high",        // オプション: 優先度の更新
-  "assignee": "bob"          // オプション: 担当者の更新
+  "priority": "high",        // optional: change priority
+  "assignee": "bob"          // optional: reassign
 }
 ```
 
-### タスク詳細取得
+### Getting Task Details
+
 ```http
 GET /tasks/file/{task_id}
 ```
 
-### Markdownファイル同期
+### Syncing with Git
+
 ```http
 POST /tasks/sync
 ```
 
-### 新規タスクのインデックス
+### Running Tasks
+
 ```http
-POST /tasks/index
+POST /exec/{task_id}
 Content-Type: application/json
 
 {
-  "file_path": "path/to/task.md"
+  "script_content": "#!/bin/bash\necho 'Hello from TaskHub!'"
 }
 ```
 
-## Markdownファイル形式
+## Task Worker System
 
-タスクは以下の形式のMarkdownファイルとして管理されます：
+TaskHub supports a sophisticated multi-agent workflow where an Orchestrator (Master AI) can delegate tasks to specialized Workers. Here's how it works:
+
+### The Orchestrator-Worker Pattern
+
+1. **Orchestrator**: Reviews all tasks, assigns them to appropriate workers
+2. **Workers**: Specialized agents that fetch assigned tasks, execute them, and report back
+3. **TaskHub**: Coordinates everything through task status and artifacts
+
+### Worker Workflow
+
+When you're a worker (like worker-2), your job is simple:
+1. Get your assigned task ID from the Orchestrator
+2. Fetch the task details using `get_task_details`
+3. Update status to `inprogress` immediately
+4. Do the work
+5. Update status to `done` with your deliverables listed in `artifacts`
+
+Check out `docs/WORKER_PROMPT.md` for the full worker system prompt.
+
+## Task File Format
+
+Tasks are just Markdown files with some metadata:
 
 ```markdown
 ---
-title: タスクのタイトル
+title: Build that cool feature
 status: todo
 created_at: 2025-06-21T14:00:00
 updated_at: 2025-06-21T14:00:00
-priority: medium  # オプション: low, medium, high
-assignee: claude  # オプション: 担当者名
-tags: [feature, backend]  # オプション
+priority: medium  # optional: low, medium, high
+assignee: claude  # optional: who's responsible
+tags: [feature, backend]  # optional: categorize your tasks
+artifacts:  # optional: deliverables when done
+  - src/cool_feature.py
+  - tests/test_cool_feature.py
 ---
 
-# タスクのタイトル
+# Build that cool feature
 
-## 目的
-このタスクの目的を明確に記述
+## What We're Building
+Clear description of what this task is all about
 
-## タスク詳細
-実装すべき内容の詳細な説明
+## The Details
+Everything you need to know to get this done
 
-## 受け入れ基準
-- [ ] 基準1
-- [ ] 基準2
-- [ ] 基準3
+## Success Looks Like
+- [ ] Feature works as expected
+- [ ] Tests are passing
+- [ ] Documentation updated
 ```
 
-## ディレクトリ構造
+## Project Structure
 
 ```
 taskhub_mcp/
-├── api.py                 # FastAPI RESTful API実装
-├── main.py               # MCPサーバーエントリポイント
-├── models.py             # Pydanticデータモデル
-├── markdown_sync.py      # Markdown同期機能
-├── requirements.txt      # Python依存関係
-├── start_server.sh       # サーバー起動スクリプト
-├── tasks/                # タスクMarkdownファイル
-│   └── *.md
-├── db/                   # TinyDBデータベース
-│   └── tasks_db.json
-├── docs/                 # プロジェクトドキュメント
-│   └── WORKER_PROMPT.md
-├── README.md            # このファイル
-├── CLAUDE.md            # Claude用コンテキスト
-└── base.md              # 初期構想ドキュメント
+├── api/                  # Modular API components
+│   ├── main.py          # FastAPI app
+│   ├── routers/         # API endpoints
+│   └── services/        # Business logic
+├── main.py              # MCP server entry
+├── models.py            # Data models
+├── markdown_sync.py     # Markdown ↔ DB sync
+├── task_executor.py     # Task runner (tmux)
+├── requirements.txt     # Dependencies
+├── start_server.sh      # Quick start script
+├── tasks/               # Your task files
+│   ├── development/     # Dev tasks
+│   └── documentation/   # Doc tasks
+├── db/                  # Task database
+├── logs/                # Execution logs
+├── docs/                # Documentation
+│   └── WORKER_PROMPT.md # Worker system docs
+├── README.md           # You're reading it!
+├── CLAUDE.md           # Context for Claude
+└── base.md             # Original design doc
 ```
 
-## タスクワークフロー
+## How Tasks Flow
 
-1. **タスク作成**: Markdownファイルとして `tasks/` ディレクトリに作成
-2. **インデックス化**: TaskHub APIが自動的にファイルを検出・インデックス
-3. **ステータス管理**: Claude CodeからMCPツールでステータスを更新
-4. **同期**: ステータス変更は自動的にMarkdownファイルに反映
-5. **履歴管理**: Gitで全ての変更履歴を追跡
+1. **Create**: Write a Markdown file in `tasks/`
+2. **Index**: TaskHub automatically detects and indexes it
+3. **Manage**: Use Claude Code to update status via MCP
+4. **Sync**: Changes sync automatically between files and DB
+5. **Track**: Git keeps the complete history
+6. **Execute**: Run tasks directly in tmux sessions
 
-## 開発
+## Development
 
-### 依存関係
+### Dependencies We Use
 
-- **FastAPI**: RESTful API フレームワーク
-- **FastAPI-MCP**: MCPプロトコル統合
-- **TinyDB**: 軽量JSONデータベース
-- **python-frontmatter**: Markdownフロントマター解析
-- **uvicorn**: ASGIサーバー
+- **FastAPI**: Our web framework of choice
+- **FastAPI-MCP**: MCP protocol integration
+- **TinyDB**: Simple JSON database
+- **python-frontmatter**: Parse those Markdown headers
+- **uvicorn**: ASGI server
 
-### 開発コマンド
+### Handy Commands
 
 ```bash
-# サーバーの状態確認
+# Check if server is running
 ps aux | grep -E 'uvicorn|fastapi|taskhub'
 
-# ログの確認（開発モード）
-uv run main.py  # --reload付きで自動再起動
+# Watch logs during development
+uv run main.py  # auto-reloads on changes
 
-# データベースのリセット
+# Start fresh
 rm db/tasks_db.json
 ```
 
-## トラブルシューティング
+## When Things Go Wrong
 
-### サーバーが起動しない場合
-1. ポート8000が使用されていないか確認: `lsof -i :8000`
-2. Python環境が正しく設定されているか確認
-3. 依存関係が全てインストールされているか確認
+### Server Won't Start?
+1. Check port 8000: `lsof -i :8000`
+2. Verify Python environment is set up
+3. Make sure all dependencies are installed
 
-### MCPツールが使えない場合
-1. Claude CodeにMCPサーバーが正しく登録されているか確認
-2. サーバーが起動しているか確認
-3. `claude mcp list` でサーバーが表示されるか確認
+### MCP Tools Not Working?
+1. Verify server is registered: `claude mcp list`
+2. Check server is actually running
+3. Try re-registering with Claude Code
 
-## 開発ガイドライン
-
-### MCP サーバー開発のベストプラクティス
-TaskHub MCPの開発では、[MCPベストプラクティスガイド](./docs/mcp-best-practices.md)に従っています。主な原則：
-
-- **自己文書化**: すべてのツールは明確な説明とパラメータスキーマを提供
-- **一貫性のある命名**: 動詞で始まるsnake_case形式
-- **構造化エラー**: AIが次のアクションを判断できる詳細なエラー情報
-- **厳密な検証**: Pydanticによる型安全なパラメータ検証
-
-詳細は[MCPベストプラクティスガイド](./docs/mcp-best-practices.md)を参照してください。
-
-## インストール後の動作確認
-
-### データディレクトリについて
-
-TaskHub MCPは、以下の優先順位でデータディレクトリを決定します：
-
-1. **環境変数 `TASKHUB_DATA_DIR`** が設定されている場合はその場所
-2. **プロジェクトルート** （.git、pyproject.toml、package.json等があるディレクトリ）
-
-プロジェクトルートに以下のディレクトリが自動的に作成されます：
-- `db/` - タスクインデックスデータベース
-- `tasks/` - Markdownタスクファイル
-- `logs/` - 実行ログ
-
+### Port Conflicts?
 ```bash
-# 例：特定のディレクトリを指定して起動
-TASKHUB_DATA_DIR=/path/to/myproject taskhub-mcp
-
-# プロジェクトディレクトリから起動（推奨）
-cd /path/to/myproject
-taskhub-mcp
-```
-
-### ポート設定について
-
-複数のプロジェクトで同時にTaskHub MCPを使用する場合、ポートの競合を避けるため以下の方法で設定できます：
-
-1. **環境変数で指定**：
-```bash
-# ポート8001で起動
+# Use a different port
 TASKHUB_PORT=8001 taskhub-mcp
 
-# ホストとポートを両方指定
+# Or specify host too
 TASKHUB_HOST=0.0.0.0 TASKHUB_PORT=8080 taskhub-mcp
 ```
 
-2. **自動ポート検出**：
-- ポート8000が使用中の場合、自動的に次の利用可能なポートを探します
-- 起動時のメッセージで実際に使用されているポートを確認してください
+## Working with Multiple Projects
 
-3. **プロジェクトごとの設定例**：
+TaskHub is smart about where it stores data:
+
+1. **Set `TASKHUB_DATA_DIR`** environment variable, or
+2. **Run from your project root** (where .git lives)
+
+It'll create these directories automatically:
+- `db/` - Task index
+- `tasks/` - Your task files
+- `logs/` - Execution logs
+
+Example setup for multiple projects:
 ```bash
-# プロジェクトA（デフォルトポート8000）
+# Project A (default port)
 cd /path/to/projectA
 taskhub-mcp
 
-# プロジェクトB（ポート8001）
+# Project B (custom port)
 cd /path/to/projectB
 TASKHUB_PORT=8001 taskhub-mcp
 
-# プロジェクトC（ポート8002）
+# Project C (another port)
 cd /path/to/projectC
 TASKHUB_PORT=8002 taskhub-mcp
 ```
 
-### 1. サーバーの起動確認
+## Quick Test
+
+After installation, make sure everything works:
 
 ```bash
-# インストール後、サーバーを起動
+# Start the server
 taskhub-mcp
 
-# 別のターミナルでヘルスチェック
+# In another terminal, check health
 curl http://127.0.0.1:8000/health
-```
 
-### 2. Claude Codeでの接続確認
-
-1. Claude Codeで新しいチャットを開始
-2. MCPツールが利用可能か確認:
-```
-# ヘルプ情報を取得
-mcp__taskhub__get_help_help__get を使用してください
-```
-
-### 3. 基本的な動作テスト
-
-```bash
-# タスク一覧の取得（空のリストが返るはず）
+# List tasks (should be empty)
 curl http://127.0.0.1:8000/tasks?status=todo
 
-# 新しいタスクの作成
+# Create a test task
 curl -X POST http://127.0.0.1:8000/tasks/create \
   -H "Content-Type: application/json" \
-  -d '{"title": "Test Task", "content": "This is a test task"}'
+  -d '{"title": "Test Task", "content": "Just testing!"}'
 
-# 作成されたタスクの確認
+# See your new task
 curl http://127.0.0.1:8000/tasks?status=todo
 ```
 
-### 4. トラブルシューティング
+## Development Best Practices
 
-- **ポート8000が使用中の場合**: 環境変数 `TASKHUB_PORT` で別のポートを指定
-- **tmuxが見つからない場合**: タスク実行機能を使用する場合は tmux をインストール
-- **ログの確認**: `logs/` ディレクトリ内のログファイルを確認
+We follow the [MCP Best Practices Guide](./docs/mcp-best-practices.md):
 
-## ライセンス
+- **Self-documenting**: Every tool has clear descriptions
+- **Consistent naming**: Verb-first snake_case
+- **Helpful errors**: AI agents can figure out what to do next
+- **Type safety**: Pydantic validates everything
 
-MIT License
+## Contributing
 
-## 貢献
+We'd love your help! Here's how:
 
-1. Issueで機能提案やバグ報告を行う
-2. フォークしてブランチを作成
-3. 変更をコミット（Markdownファイルのフォーマットを維持）
-4. プルリクエストを送信
+1. Open an issue with your idea or bug report
+2. Fork and create a feature branch
+3. Make your changes (keep the Markdown format clean!)
+4. Send us a pull request
 
-貢献の際は、[MCPベストプラクティス](./docs/mcp-best-practices.md)に従ってください。
+Please follow our [MCP Best Practices](./docs/mcp-best-practices.md) when contributing.
+
+## License
+
+MIT License - Go wild!
 
 ---
 
-詳細な技術仕様については[docs/](./docs/)ディレクトリを参照してください。
+Want more technical details? Check out the [docs/](./docs/) directory.

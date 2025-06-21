@@ -18,7 +18,7 @@ TaskHub MCPは、AIエージェント（特にClaude）を主要なユーザー�
 
 ### 前提条件
 
-- Python 3.8以上
+- Python 3.10以上
 - uv または pip
 - Git
 - tmux（タスク実行機能を使用する場合）

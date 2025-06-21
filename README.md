@@ -64,6 +64,15 @@ taskhub-mcp
 
 # Or this works too
 taskhub-server
+
+# Run in background/daemon mode
+taskhub-mcp --daemon
+
+# Check server status
+taskhub-mcp --status
+
+# Stop the daemon
+taskhub-mcp --stop
 ```
 
 For development:
@@ -268,6 +277,12 @@ uv run main.py  # auto-reloads on changes
 
 # Start fresh
 rm db/tasks_db.json
+
+# Daemon mode management
+taskhub-mcp --daemon     # Start in background
+taskhub-mcp --status     # Check if running
+taskhub-mcp --stop       # Stop daemon
+tail -f ~/taskhub-mcp.log  # View daemon logs (in data directory)
 ```
 
 ## When Things Go Wrong
@@ -276,10 +291,12 @@ rm db/tasks_db.json
 1. Check port 8000: `lsof -i :8000`
 2. Verify Python environment is set up
 3. Make sure all dependencies are installed
+4. If running daemon, check status: `taskhub-mcp --status`
+5. Check logs: `tail -f <data-dir>/taskhub-mcp.log`
 
 ### MCP Tools Not Working?
 1. Verify server is registered: `claude mcp list`
-2. Check server is actually running
+2. Check server is actually running: `taskhub-mcp --status`
 3. Try re-registering with Claude Code
 
 ### Port Conflicts?
@@ -289,7 +306,15 @@ TASKHUB_PORT=8001 taskhub-mcp
 
 # Or specify host too
 TASKHUB_HOST=0.0.0.0 TASKHUB_PORT=8080 taskhub-mcp
+
+# With daemon mode
+TASKHUB_PORT=8001 taskhub-mcp --daemon
 ```
+
+### Daemon Issues?
+- **Stale PID file**: If the server crashed, remove `<data-dir>/taskhub-mcp.pid`
+- **Can't stop daemon**: Check if process exists with `ps aux | grep taskhub`
+- **Logs location**: Check `<data-dir>/taskhub-mcp.log` where `<data-dir>` is your project root or `TASKHUB_DATA_DIR`
 
 ## Working with Multiple Projects
 

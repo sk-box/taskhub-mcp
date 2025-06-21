@@ -1,0 +1,32 @@
+{
+  "name": "TaskHub MCP Development",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "forwardPorts": [5173],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.linting.enabled": true,
+        "python.linting.pylintEnabled": true,
+        "python.formatting.provider": "black",
+        "python.terminal.activateEnvironment": true
+      }
+    }
+  },
+  "postCreateCommand": "sudo mkdir -p ${containerWorkspaceFolder}/taskhub/{db,logs,tasks} && sudo chown -R vscode:vscode ${containerWorkspaceFolder}/taskhub && sudo chmod -R 755 ${containerWorkspaceFolder}/taskhub && mkdir -p ${containerWorkspaceFolder}/.claude && echo '{\"enabledTools\":{\"allow\":[\"mcp__taskhub__*\"],\"deny\":[]}}' > ${containerWorkspaceFolder}/.claude/settings.json && sudo cp /tmp/mcp.json.template ${containerWorkspaceFolder}/.mcp.json && sudo chown vscode:vscode ${containerWorkspaceFolder}/.mcp.json && echo 'TaskHub MCP DevContainer ready!' && echo 'Data directories created at: ${containerWorkspaceFolder}/taskhub'",
+  "postStartCommand": "export PATH=~/.npm-global/bin:$PATH && nohup taskhub-mcp > ${containerWorkspaceFolder}/taskhub/logs/taskhub-mcp.log 2>&1 & echo $! > ${containerWorkspaceFolder}/taskhub/taskhub-mcp.pid && echo 'TaskHub MCP started in background (PID: '$(cat ${containerWorkspaceFolder}/taskhub/taskhub-mcp.pid)')' && echo 'Logs: ${containerWorkspaceFolder}/taskhub/logs/taskhub-mcp.log' && sleep 2 && claude mcp add -s project -t sse taskhub http://localhost:5173/mcp 2>/dev/null || echo 'TaskHub MCP already registered'",
+  "remoteUser": "vscode",
+  "remoteEnv": {
+    "TASKHUB_DATA_DIR": "${containerWorkspaceFolder}/taskhub",
+    "TASKHUB_PORT": "5173"
+  }
+}

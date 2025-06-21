@@ -16,19 +16,21 @@ mcp.mount()
 
 def run_server():
     """Run the TaskHub MCP server"""
+    import socket
+    
     port = SERVER_PORT
     
-    # Try to use the configured port first
-    try:
-        uvicorn.run("taskhub_mcp.api:app", host=SERVER_HOST, port=port, reload=True)
-    except OSError as e:
-        if "address already in use" in str(e).lower():
+    # Check if port is available before starting
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        try:
+            s.bind((SERVER_HOST, port))
+        except OSError:
             # Port is already in use, find an available one
             port = find_available_port(port + 1)
             print(f"Port {SERVER_PORT} is already in use, using port {port} instead")
-            uvicorn.run("taskhub_mcp.api:app", host=SERVER_HOST, port=port, reload=True)
-        else:
-            raise
+    
+    # Run the server on the available port
+    uvicorn.run("taskhub_mcp.api:app", host=SERVER_HOST, port=port, reload=True)
 
 
 if __name__ == "__main__":

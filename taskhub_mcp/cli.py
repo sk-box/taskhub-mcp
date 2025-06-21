@@ -11,10 +11,24 @@ from .config import SERVER_HOST, SERVER_PORT, get_data_dir
 
 def main():
     """Main entry point for taskhub-mcp CLI"""
+    import socket
+    from .config import find_available_port
+    
     data_dir = get_data_dir()
     print(f"Starting TaskHub MCP server...")
     print(f"Data directory: {data_dir}")
-    print(f"Server: http://{SERVER_HOST}:{SERVER_PORT}")
+    
+    # Check if configured port is available
+    port = SERVER_PORT
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        try:
+            s.bind((SERVER_HOST, port))
+        except OSError:
+            # Port is already in use, find an available one
+            port = find_available_port(port + 1)
+            print(f"Port {SERVER_PORT} is already in use, trying port {port}")
+    
+    print(f"Server: http://{SERVER_HOST}:{port}")
     
     # Run the server using module execution
     try:

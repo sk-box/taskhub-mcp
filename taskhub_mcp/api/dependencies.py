@@ -2,25 +2,27 @@ from tinydb import TinyDB, Query
 from pathlib import Path
 from ..markdown_sync import MarkdownTaskParser, MarkdownTaskWriter
 from ..task_executor import TaskExecutor
+from ..config import DB_PATH, TASKS_DIR, LOGS_DIR
 
 # Database setup
 def get_db():
-    return TinyDB("./db/tasks_db.json")
+    return TinyDB(str(DB_PATH))
 
 # Query helper
 TaskQuery = Query()
 
 # Markdown sync components
 def get_parser():
-    return MarkdownTaskParser("./tasks")
+    return MarkdownTaskParser(str(TASKS_DIR))
 
 def get_writer():
-    return MarkdownTaskWriter("./tasks")
+    return MarkdownTaskWriter(str(TASKS_DIR))
 
 # Task executor
 def get_executor():
-    return TaskExecutor()
+    return TaskExecutor(tasks_dir=TASKS_DIR, logs_dir=LOGS_DIR)
 
 # Ensure tasks directory exists
 def ensure_tasks_directory():
-    Path("./tasks").mkdir(exist_ok=True)
+    # This is now handled by config.py
+    pass

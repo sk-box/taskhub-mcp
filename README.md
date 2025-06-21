@@ -255,6 +255,27 @@ TaskHub MCPの開発では、[MCPベストプラクティスガイド](./docs/mc
 
 ## インストール後の動作確認
 
+### データディレクトリについて
+
+TaskHub MCPは、以下の優先順位でデータディレクトリを決定します：
+
+1. **環境変数 `TASKHUB_DATA_DIR`** が設定されている場合はその場所
+2. **プロジェクトルート** （.git、pyproject.toml、package.json等があるディレクトリ）
+
+プロジェクトルートに以下のディレクトリが自動的に作成されます：
+- `db/` - タスクインデックスデータベース
+- `tasks/` - Markdownタスクファイル
+- `logs/` - 実行ログ
+
+```bash
+# 例：特定のディレクトリを指定して起動
+TASKHUB_DATA_DIR=/path/to/myproject taskhub-mcp
+
+# プロジェクトディレクトリから起動（推奨）
+cd /path/to/myproject
+taskhub-mcp
+```
+
 ### 1. サーバーの起動確認
 
 ```bash

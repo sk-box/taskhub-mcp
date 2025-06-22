@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskHub SSE Event Monitor</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .connected {
+            background-color: #28a745;
+            color: white;
+        }
+        .disconnected {
+            background-color: #dc3545;
+            color: white;
+        }
+        .event-log {
+            background-color: #2d2d2d;
+            border: 1px solid #555;
+            border-radius: 5px;
+            padding: 15px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .event {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #3c3c3c;
+            border-radius: 3px;
+            border-left: 3px solid #007acc;
+        }
+        .event-time {
+            color: #999;
+            font-size: 0.9em;
+        }
+        .event-data {
+            margin-top: 5px;
+            color: #9cdcfe;
+        }
+        .controls {
+            margin: 20px 0;
+        }
+        button {
+            background-color: #007acc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #005a9e;
+        }
+        button:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>TaskHub SSE Event Monitor</h1>
+        
+        <div id="status" class="status disconnected">
+            Disconnected
+        </div>
+        
+        <div class="controls">
+            <button id="connectBtn" onclick="connect()">Connect</button>
+            <button id="disconnectBtn" onclick="disconnect()" disabled>Disconnect</button>
+            <button onclick="clearLog()">Clear Log</button>
+        </div>
+        
+        <h2>Event Log</h2>
+        <div id="eventLog" class="event-log">
+            <div style="color: #999;">Waiting for connection...</div>
+        </div>
+    </div>
+
+    <script>
+        let eventSource = null;
+        const statusDiv = document.getElementById('status');
+        const eventLogDiv = document.getElementById('eventLog');
+        const connectBtn = document.getElementById('connectBtn');
+        const disconnectBtn = document.getElementById('disconnectBtn');
+
+        function connect() {
+            if (eventSource) {
+                eventSource.close();
+            }
+
+            eventLogDiv.innerHTML = '';
+            addLogEntry('Connecting to SSE endpoint...', 'system');
+
+            eventSource = new EventSource('http://localhost:8000/api/events/stream');
+
+            eventSource.onopen = function() {
+                statusDiv.textContent = 'Connected';
+                statusDiv.className = 'status connected';
+                connectBtn.disabled = true;
+                disconnectBtn.disabled = false;
+                addLogEntry('Connection established', 'system');
+            };
+
+            eventSource.onmessage = function(event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    addLogEntry(JSON.stringify(data, null, 2), 'event', data.event);
+                } catch (e) {
+                    addLogEntry(event.data, 'raw');
+                }
+            };
+
+            eventSource.onerror = function(error) {
+                statusDiv.textContent = 'Disconnected (Error)';
+                statusDiv.className = 'status disconnected';
+                connectBtn.disabled = false;
+                disconnectBtn.disabled = true;
+                addLogEntry('Connection error or closed', 'error');
+            };
+        }
+
+        function disconnect() {
+            if (eventSource) {
+                eventSource.close();
+                eventSource = null;
+            }
+            statusDiv.textContent = 'Disconnected';
+            statusDiv.className = 'status disconnected';
+            connectBtn.disabled = false;
+            disconnectBtn.disabled = true;
+            addLogEntry('Disconnected by user', 'system');
+        }
+
+        function clearLog() {
+            eventLogDiv.innerHTML = '<div style="color: #999;">Log cleared</div>';
+        }
+
+        function addLogEntry(message, type = 'event', eventType = '') {
+            const entry = document.createElement('div');
+            entry.className = 'event';
+            
+            const time = new Date().toLocaleTimeString();
+            const timeSpan = document.createElement('div');
+            timeSpan.className = 'event-time';
+            timeSpan.textContent = `[${time}] ${eventType ? `Event: ${eventType}` : type}`;
+            
+            const dataDiv = document.createElement('div');
+            dataDiv.className = 'event-data';
+            dataDiv.textContent = message;
+            
+            if (type === 'error') {
+                entry.style.borderLeftColor = '#dc3545';
+            } else if (type === 'system') {
+                entry.style.borderLeftColor = '#ffc107';
+            }
+            
+            entry.appendChild(timeSpan);
+            entry.appendChild(dataDiv);
+            eventLogDiv.appendChild(entry);
+            
+            // Auto-scroll to bottom
+            eventLogDiv.scrollTop = eventLogDiv.scrollHeight;
+        }
+
+        // Auto-connect on page load
+        window.onload = function() {
+            connect();
+        };
+    </script>
+</body>
+</html>

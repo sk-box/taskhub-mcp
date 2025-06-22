@@ -263,6 +263,55 @@ def build_tool_info() -> Dict[str, ToolInfo]:
                 )
             ],
             related_tools=["exec_status", "get_logs", "stop_exec"]
+        ),
+        
+        "stream_events": ToolInfo(
+            name="stream_events",
+            description="Stream real-time task events via Server-Sent Events (SSE)",
+            http_method="GET",
+            endpoint="/events/stream",
+            parameters=[],
+            examples=[
+                ExampleInfo(
+                    description="Connect to SSE stream",
+                    request={},
+                    response={
+                        "event": "task_updated",
+                        "data": {
+                            "task_id": "123",
+                            "status": "inprogress",
+                            "priority": "high"
+                        },
+                        "timestamp": "2025-06-22T10:00:00Z"
+                    }
+                )
+            ],
+            related_tools=["event_status"],
+            notes=[
+                "Long-lived connection for real-time updates",
+                "Supports task_updated and execution_event types",
+                "Automatic keepalive pings every 30 seconds"
+            ]
+        ),
+        
+        "event_status": ToolInfo(
+            name="event_status",
+            description="Get the status of the event broadcasting system",
+            http_method="GET",
+            endpoint="/events/status",
+            parameters=[],
+            examples=[
+                ExampleInfo(
+                    description="Check event system status",
+                    request={},
+                    response={
+                        "status": "active",
+                        "connected_clients": 3,
+                        "endpoint": "/api/events/stream"
+                    }
+                )
+            ],
+            related_tools=["stream_events"]
         )
     }
     

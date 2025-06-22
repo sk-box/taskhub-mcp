@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from .routers import tasks, execution, help
+from .routers import tasks, execution, help, events
 
 app = FastAPI(
     title="TaskHub MCP",
@@ -13,3 +13,4 @@ app = FastAPI(
 app.include_router(tasks.router)
 app.include_router(execution.router)
 app.include_router(help.router)
+app.include_router(events.router)

@@ -1,9 +1,18 @@
 ---
 created_at: 2025-06-21 22:12:56.940255
 priority: high
-status: todo
+status: done
 title: 'Manager: SSEイベントリスナーの実装'
-updated_at: 2025-06-21 22:12:56.940259
+updated_at: 2025-06-22 12:42:21.335726
+artifacts:
+  - taskhub_mcp/event_broadcaster.py
+  - taskhub_mcp/api/routers/events.py
+  - docs/sse-events.md
+  - docs/sse-implementation-guide.md
+  - docs/sse-mcp-integration.md
+  - docs/worker-architecture.md
+  - scripts/spawn-decision-worker.sh
+  - scripts/spawn-execution-worker.sh
 ---
 
 # Manager: SSEイベントリスナーの実装

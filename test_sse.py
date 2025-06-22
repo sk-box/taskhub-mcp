@@ -14,7 +14,7 @@ async def listen_to_sse():
     
     async with aiohttp.ClientSession() as session:
         try:
-            async with session.get("http://localhost:8000/api/events/stream") as response:
+            async with session.get("http://localhost:8001/events/stream") as response:
                 print(f"Connected! Status: {response.status}")
                 
                 async for line in response.content:
@@ -40,7 +40,7 @@ async def trigger_task_update():
     print("\nTriggering task update...")
     async with aiohttp.ClientSession() as session:
         # First, get a task
-        async with session.get("http://localhost:8000/api/tasks/?status=todo") as response:
+        async with session.get("http://localhost:8001/tasks/?status=todo") as response:
             if response.status == 200:
                 tasks = await response.json()
                 if tasks:
@@ -49,8 +49,7 @@ async def trigger_task_update():
                     
                     # Update the task
                     async with session.put(
-                        f"http://localhost:8000/api/tasks/status/{task_id}",
-                        json={"new_status": "inprogress", "priority": "high"}
+                        f"http://localhost:8001/tasks/status/{task_id}?new_status=inprogress&priority=high"
                     ) as update_response:
                         if update_response.status == 200:
                             print("Task updated successfully!")
@@ -71,7 +70,7 @@ async def main():
 
 if __name__ == "__main__":
     print("Starting SSE test...")
-    print("Make sure the TaskHub MCP server is running on port 8000")
+    print("Make sure the TaskHub MCP server is running on port 8001")
     print("Press Ctrl+C to stop\n")
     
     try:

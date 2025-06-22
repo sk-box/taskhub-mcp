@@ -204,26 +204,35 @@ Connect to receive instant notifications about task updates:
 GET /events/stream
 ```
 
-Events are sent in JSON format:
-```json
-{
-  "id": "unique-event-id",
-  "event": "task_updated",
-  "data": {
-    "task_id": "task-uuid",
-    "status": "inprogress",
-    "priority": "high"
-  },
-  "timestamp": "2025-06-22T10:00:00Z"
-}
+**Response**: Server-Sent Events stream with the following format:
 ```
+HTTP/1.1 200 OK
+Content-Type: text/event-stream
+Cache-Control: no-cache
+X-Accel-Buffering: no
+
+data: {"event": "connected", "data": {"message": "SSE connection established"}}
+
+data: {"id": "b11c96b7-2d03-4407-80a1-ffbfd2540d49", "event": "task_updated", "data": {"task_id": "513bb42a-e33f-4db0-a3dc-fdefe8d7c0f5", "status": "review", "priority": null, "assignee": null, "artifacts": null}, "timestamp": "2025-06-22T03:42:21.334227Z"}
+
+: keepalive
+
+data: {"id": "c22d97a8-3e04-5508-91b2-ggcgd3651e50", "event": "execution_event", "data": {"task_id": "513bb42a-e33f-4db0-a3dc-fdefe8d7c0f5", "execution_event": "started", "session_name": "taskhub-123", "log_file": "logs/task-123.log"}, "timestamp": "2025-06-22T03:43:00.123456Z"}
+```
+
+**Event Types**:
+- `connected`: Initial connection confirmation
+- `task_updated`: Task status, priority, or assignee changes
+- `execution_event`: Task execution lifecycle events
+
+**Keepalive**: Sent every 30 seconds as `: keepalive` to maintain connection
 
 Example JavaScript client:
 ```javascript
 const eventSource = new EventSource('http://localhost:8000/events/stream');
 eventSource.onmessage = (event) => {
     const data = JSON.parse(event.data);
-    console.log('Task updated:', data);
+    console.log('Event received:', data);
 };
 ```
 

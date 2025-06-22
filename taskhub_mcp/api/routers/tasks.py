@@ -3,9 +3,11 @@ from typing import List, Literal, Optional, Union
 from datetime import datetime
 from pathlib import Path
 import json
+import asyncio
 
 from ...models import TaskIndex
 from ..dependencies import get_db, TaskQuery, get_parser, get_writer, ensure_tasks_directory
+from ...event_broadcaster import event_broadcaster
 
 router = APIRouter(prefix="/tasks", tags=["Task Management"])
 
@@ -50,7 +52,7 @@ def list_tasks(status: Literal["todo", "inprogress", "review", "done"] = "todo")
     return db.search(TaskQuery.status == status)
 
 @router.put("/status/{task_id}", response_model=TaskIndex)
-def update_status(
+async def update_status(
     task_id: str, 
     new_status: Literal["inprogress", "review", "done"], 
     artifacts: Optional[Union[List[str], str]] = None,
@@ -109,6 +111,15 @@ def update_status(
     # Sync to Markdown file in background
     if background_tasks:
         background_tasks.add_task(writer.update_task_file, updated_task["file_path"], updated_task)
+    
+    # Broadcast task update event
+    await event_broadcaster.broadcast_task_update(
+        task_id=task_id,
+        status=new_status,
+        priority=priority,
+        assignee=assignee,
+        artifacts=artifacts
+    )
     
     return updated_task
 

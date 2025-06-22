@@ -4,6 +4,7 @@ from typing import Optional, Dict, Any
 from datetime import datetime
 
 from ..dependencies import get_db, TaskQuery, get_writer, get_executor
+from ...event_broadcaster import event_broadcaster
 
 router = APIRouter(prefix="/exec", tags=["Task Execution"])
 
@@ -39,6 +40,14 @@ async def execute(task_id: str, request: TaskExecuteRequest = TaskExecuteRequest
         # Update Markdown file
         updated_task = db.get(TaskQuery.id == task_id)
         writer.update_task_file(updated_task["file_path"], updated_task)
+        
+        # Broadcast execution started event
+        await event_broadcaster.broadcast_execution_event(
+            task_id=task_id,
+            event_type="started",
+            session_name=execution_info["session_name"],
+            log_file=execution_info["log_file"]
+        )
         
         return TaskExecutionResponse(**execution_info)
     except ValueError as e:

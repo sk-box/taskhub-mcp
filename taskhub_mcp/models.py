@@ -70,6 +70,7 @@ class ToolInfo(BaseModel):
     parameters: List[ParameterInfo]
     examples: List[ExampleInfo]
     related_tools: Optional[List[str]] = None
+    notes: Optional[List[str]] = None
 
 
 class APIInfo(BaseModel):

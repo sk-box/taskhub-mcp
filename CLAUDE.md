@@ -21,6 +21,7 @@ TaskHub MCPは、AIエージェント（特にClaude）を主要なユーザー�
 - APIのリファクタリング（モジュール構造化）
 - デーモン/バックグラウンドモード（--daemon, --stop, --status）
 - プロジェクトスコープのMCP設定（.mcp.json）
+- SSE（Server-Sent Events）によるリアルタイムイベント配信
 
 🚧 **進行中**:
 - エラーハンドリングの改善
@@ -29,13 +30,14 @@ TaskHub MCPは、AIエージェント（特にClaude）を主要なユーザー�
 ## Key Components
 1. **API Module** (`api/`): モジュール化されたFastAPI実装
    - `api/main.py`: FastAPIアプリケーション
-   - `api/routers/`: tasks, execution, helpのルーター
+   - `api/routers/`: tasks, execution, help, eventsのルーター
    - `api/services/`: ヘルプビルダーなどのサービス
 2. **MCP Integration** (`main.py`): FastAPI-MCPによるMCP公開
 3. **CLI** (`cli.py`): コマンドラインインターフェース（デーモンモード対応）
 4. **Markdown Sync** (`markdown_sync.py`): Markdownファイルとの同期機能
 5. **Task Model** (`models.py`): Pydanticモデル定義
 6. **Task Executor** (`task_executor.py`): tmuxベースのタスク実行
+7. **Event Broadcaster** (`event_broadcaster.py`): SSEイベント配信システム
 
 ## Directory Structure
 ```
@@ -77,6 +79,13 @@ When connected via Claude Code, the following tools are available:
 ### Help System
 - `mcp__taskhub__get_help_help__get` - Get comprehensive help
 - `mcp__taskhub__get_tool_help_help_tools__tool_name__get` - Get specific tool help
+
+### Real-Time Events (SSE)
+- **Endpoint**: `/events/stream` - リアルタイムイベントストリーム
+- **Event Types**:
+  - `task_updated`: タスクステータス、優先度、アサインeeの変更時
+  - `execution_event`: タスク実行ライフサイクルイベント
+- **用途**: マルチエージェント協調、リアルタイム監視、自動化ワークフロー
 
 ## Task Workflow
 1. タスクはMarkdownファイルとして `tasks/` ディレクトリに作成
@@ -164,6 +173,7 @@ DevContainerを使用する場合、自動的に：
 - エラー時は具体的な次のアクションを提示してください
 - 優先度（low/medium/high）とアサインee管理が可能です
 - デーモンモードでバックグラウンド実行が可能です
+- SSEによりタスク更新をリアルタイムで通知できます（ポーリング不要）
 
 ## Testing & Validation
 現在、正式なテストスイートはありません。動作確認は以下で行います：
@@ -222,4 +232,4 @@ TASKHUB_DATA_DIR=/custom/path taskhub-mcp
 - 自動ポート検出（使用中の場合は次のポートを試行）
 
 ---
-Last updated: 2025-06-22
+Last updated: 2025-06-22 (SSE feature added)

@@ -15,6 +15,7 @@ TaskHub MCP is a task management system designed with AI agents (especially Clau
 - **Real-Time Sync**: Changes to Markdown files instantly update the database and vice versa
 - **Task Execution**: Not just tracking - actually run tasks in tmux sessions
 - **Multi-Agent Support**: Orchestrator-Worker pattern for complex workflows
+- **Real-Time Events**: Server-Sent Events (SSE) for instant task update notifications
 
 ## Getting Started
 
@@ -193,6 +194,37 @@ GET /tasks/file/{task_id}
 
 ```http
 POST /tasks/sync
+```
+
+### Real-Time Event Streaming (SSE)
+
+Connect to receive instant notifications about task updates:
+
+```http
+GET /events/stream
+```
+
+Events are sent in JSON format:
+```json
+{
+  "id": "unique-event-id",
+  "event": "task_updated",
+  "data": {
+    "task_id": "task-uuid",
+    "status": "inprogress",
+    "priority": "high"
+  },
+  "timestamp": "2025-06-22T10:00:00Z"
+}
+```
+
+Example JavaScript client:
+```javascript
+const eventSource = new EventSource('http://localhost:8000/events/stream');
+eventSource.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    console.log('Task updated:', data);
+};
 ```
 
 ### Running Tasks
